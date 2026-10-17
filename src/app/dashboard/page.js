@@ -1,12 +1,25 @@
 import Link from "next/link";
 import TaskManager from "@/components/TaskManager";
 import { siteConfig } from "@/lib/content";
+import { createClient } from "@/lib/supabase/server";
+import { logout } from "@/app/actions";
+import { fromRow } from "@/lib/tasks";
 
 export const metadata = {
   title: `Dashboard | ${siteConfig.name}`,
 };
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { data: rows, error: loadError } = await supabase
+    .from("tasks")
+    .select("*")
+    .order("created_at", { ascending: false });
+
   return (
     <div className="flex min-h-screen flex-col">
       <header className="border-b border-slate-200 bg-white">
@@ -14,7 +27,19 @@ export default function DashboardPage() {
           <Link href="/" className="text-xl font-bold text-indigo-600">
             {siteConfig.name}
           </Link>
-          <span className="text-sm text-slate-500">Dashboard</span>
+          <div className="flex items-center gap-3">
+            <span className="hidden text-sm text-slate-500 sm:inline">
+              {user?.user_metadata?.full_name || user?.email}
+            </span>
+            <form action={logout}>
+              <button
+                type="submit"
+                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100"
+              >
+                Log out
+              </button>
+            </form>
+          </div>
         </div>
       </header>
 
@@ -22,7 +47,10 @@ export default function DashboardPage() {
         <h1 className="text-2xl font-bold text-slate-900">Your tasks</h1>
         <p className="text-sm text-slate-600">A quick overview of your work.</p>
 
-        <TaskManager />
+        <TaskManager
+          initialTasks={(rows ?? []).map(fromRow)}
+          loadError={loadError ? "Could not load your tasks. Please refresh the page." : ""}
+        />
 
         <section className="mt-6 rounded-xl border border-indigo-200 bg-indigo-50 p-5">
           <h2 className="font-semibold text-indigo-900">AI summary</h2>

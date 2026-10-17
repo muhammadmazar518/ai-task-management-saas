@@ -44,3 +44,23 @@ export function filterTasks(tasks, { search = "", status = "all", priority = "al
     return true;
   });
 }
+
+// Database rows use due_date; the UI uses dueDate.
+export function fromRow(row) {
+  return {
+    id: row.id,
+    title: row.title,
+    priority: row.priority,
+    status: row.status,
+    dueDate: row.due_date ?? "",
+  };
+}
+
+export function toRow(values) {
+  return {
+    title: values.title,
+    priority: values.priority,
+    status: values.status,
+    due_date: values.dueDate || null,
+  };
+}

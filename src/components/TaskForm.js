@@ -17,7 +17,7 @@ const emptyForm = {
   dueDate: "",
 };
 
-export default function TaskForm({ onSubmit, initialTask = null, onCancel = null }) {
+export default function TaskForm({ onSubmit, initialTask = null, onCancel = null, busy = false }) {
   const isEditing = Boolean(initialTask);
   const [form, setForm] = useState(
     initialTask
@@ -153,7 +153,7 @@ export default function TaskForm({ onSubmit, initialTask = null, onCancel = null
           type="submit"
           className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
         >
-          {isEditing ? "Save changes" : "Add task"}
+          {busy ? "Saving..." : isEditing ? "Save changes" : "Add task"}
         </button>
         {isEditing && (
           <button
