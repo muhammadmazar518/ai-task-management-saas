@@ -3,8 +3,11 @@
 import { useState } from "react";
 import StatCard from "@/components/StatCard";
 import TaskForm from "@/components/TaskForm";
+import { createClient } from "@/lib/supabase/client";
 import {
   filterTasks,
+  fromRow,
+  toRow,
   getTaskStats,
   isOverdue,
   PRIORITIES,
@@ -15,10 +18,13 @@ import {
 
 const defaultFilters = { search: "", status: "all", priority: "all" };
 
-export default function TaskManager() {
-  const [tasks, setTasks] = useState([]);
+export default function TaskManager({ initialTasks = [], loadError = "" }) {
+  const [supabase] = useState(() => createClient());
+  const [tasks, setTasks] = useState(initialTasks);
   const [editingId, setEditingId] = useState(null);
   const [filters, setFilters] = useState(defaultFilters);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(loadError);
 
   const stats = getTaskStats(tasks);
   const visibleTasks = filterTasks(tasks, filters);
@@ -32,37 +38,99 @@ export default function TaskManager() {
     setFilters((current) => ({ ...current, [name]: value }));
   }
 
-  function handleAddTask(values) {
-    const task = { id: crypto.randomUUID(), ...values };
-    setTasks((current) => [task, ...current]);
+  async function handleAddTask(values) {
+    setBusy(true);
+    setError("");
+    const { data, error: dbError } = await supabase
+      .from("tasks")
+      .insert(toRow(values))
+      .select()
+      .single();
+    setBusy(false);
+    if (dbError) {
+      setError("Could not add the task. Please try again.");
+      return;
+    }
+    setTasks((current) => [fromRow(data), ...current]);
   }
 
-  function handleUpdateTask(id, values) {
+  async function handleUpdateTask(id, values) {
+    setBusy(true);
+    setError("");
+    const { data, error: dbError } = await supabase
+      .from("tasks")
+      .update(toRow(values))
+      .eq("id", id)
+      .select()
+      .single();
+    setBusy(false);
+    if (dbError) {
+      setError("Could not save your changes. Please try again.");
+      return;
+    }
     setTasks((current) =>
-      current.map((task) => (task.id === id ? { ...task, ...values } : task))
+      current.map((task) => (task.id === id ? fromRow(data) : task))
     );
     setEditingId(null);
   }
 
-  function handleMarkDone(id) {
+  async function handleMarkDone(id) {
+    setBusy(true);
+    setError("");
+    const { error: dbError } = await supabase
+      .from("tasks")
+      .update({ status: "done" })
+      .eq("id", id);
+    setBusy(false);
+    if (dbError) {
+      setError("Could not update the task. Please try again.");
+      return;
+    }
     setTasks((current) =>
       current.map((task) => (task.id === id ? { ...task, status: "done" } : task))
     );
   }
 
-  function handleDelete(id) {
+  async function handleDelete(id) {
     if (!window.confirm("Delete this task? This cannot be undone.")) return;
+    setBusy(true);
+    setError("");
+    const { error: dbError } = await supabase
+      .from("tasks")
+      .delete()
+      .eq("id", id);
+    setBusy(false);
+    if (dbError) {
+      setError("Could not delete the task. Please try again.");
+      return;
+    }
     setTasks((current) => current.filter((task) => task.id !== id));
     if (editingId === id) setEditingId(null);
   }
 
   const smallButton =
-    "rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100";
+    "rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50";
   const filterField =
     "rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none";
 
   return (
     <>
+      {error && (
+        <div
+          role="alert"
+          className="mt-6 flex items-start justify-between gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"
+        >
+          <span>{error}</span>
+          <button
+            type="button"
+            onClick={() => setError("")}
+            className="font-medium underline"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
       <section className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard label="Total tasks" value={stats.total} tone="slate" />
         <StatCard label="Completed" value={stats.completed} tone="green" />
@@ -71,7 +139,7 @@ export default function TaskManager() {
       </section>
 
       <section className="mt-6">
-        <TaskForm onSubmit={handleAddTask} />
+        <TaskForm onSubmit={handleAddTask} busy={busy} />
       </section>
 
       {tasks.length > 0 && (
@@ -147,6 +215,7 @@ export default function TaskManager() {
                 <li key={task.id}>
                   <TaskForm
                     initialTask={task}
+                    busy={busy}
                     onSubmit={(values) => handleUpdateTask(task.id, values)}
                     onCancel={() => setEditingId(null)}
                   />
@@ -181,6 +250,7 @@ export default function TaskManager() {
                     {task.status !== "done" && (
                       <button
                         type="button"
+                        disabled={busy}
                         onClick={() => handleMarkDone(task.id)}
                         className={smallButton}
                       >
@@ -189,6 +259,7 @@ export default function TaskManager() {
                     )}
                     <button
                       type="button"
+                      disabled={busy}
                       onClick={() => setEditingId(task.id)}
                       className={smallButton}
                     >
@@ -196,8 +267,9 @@ export default function TaskManager() {
                     </button>
                     <button
                       type="button"
+                      disabled={busy}
                       onClick={() => handleDelete(task.id)}
-                      className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50"
+                      className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
                     >
                       Delete
                     </button>
