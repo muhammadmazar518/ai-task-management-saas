@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -7,21 +8,27 @@ export default function PasswordInput({ id, label, ...inputProps }) {
 
   return (
     <div className="mt-4">
-      <label htmlFor={id} className="block text-sm font-medium text-slate-700">
+      <label
+        htmlFor={id}
+        className="block text-sm font-medium text-slate-300"
+      >
         {label}
       </label>
-      <div className="relative mt-1">
+
+      <div className="relative mt-2">
         <input
           id={id}
           type={visible ? "text" : "password"}
-          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 pr-16 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none"
+          className="w-full rounded-xl border border-white/10 bg-[#09090f] px-4 py-3 pr-16 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-violet-400/60 focus:ring-2 focus:ring-violet-400/10"
           {...inputProps}
         />
+
         <button
           type="button"
-          onClick={() => setVisible((v) => !v)}
+          onClick={() => setVisible((current) => !current)}
           aria-label={visible ? "Hide password" : "Show password"}
-          className="absolute inset-y-0 right-0 px-3 text-xs font-medium text-indigo-600 hover:text-indigo-800"
+          aria-pressed={visible}
+          className="absolute inset-y-0 right-0 rounded-r-xl px-4 text-xs font-semibold text-violet-300 transition hover:text-violet-200 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-violet-400/50"
         >
           {visible ? "Hide" : "Show"}
         </button>
