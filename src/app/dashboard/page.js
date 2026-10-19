@@ -1,5 +1,6 @@
 import Link from "next/link";
 import TaskManager from "@/components/TaskManager";
+import AiSummary from "@/components/AiSummary";
 import { siteConfig } from "@/lib/content";
 import { createClient } from "@/lib/supabase/server";
 import { logout } from "@/app/actions";
@@ -52,13 +53,7 @@ export default async function DashboardPage() {
           loadError={loadError ? "Could not load your tasks. Please refresh the page." : ""}
         />
 
-        <section className="mt-6 rounded-xl border border-indigo-200 bg-indigo-50 p-5">
-          <h2 className="font-semibold text-indigo-900">AI summary</h2>
-          <p className="mt-1 text-sm text-indigo-800">
-            Add some tasks and your AI summary and suggested next steps will
-            appear here.
-          </p>
-        </section>
+        <AiSummary />
       </main>
     </div>
   );
