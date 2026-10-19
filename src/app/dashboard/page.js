@@ -1,4 +1,5 @@
 
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import TaskManager from "@/components/TaskManager";
 import AiSummary from "@/components/AiSummary";
@@ -16,11 +17,17 @@ export default async function DashboardPage() {
 
   const {
     data: { user },
+    error: authError,
   } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    redirect("/login");
+  }
 
   const { data: rows, error: loadError } = await supabase
     .from("tasks")
     .select("*")
+    .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
   return (
@@ -44,6 +51,7 @@ export default async function DashboardPage() {
             <span>▦</span>
             Overview
           </div>
+
           <a
             href="#tasks"
             className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-slate-400 transition hover:bg-white/5 hover:text-white"
@@ -51,6 +59,7 @@ export default async function DashboardPage() {
             <span>☷</span>
             My tasks
           </a>
+
           <a
             href="#ai-assistant"
             className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-slate-400 transition hover:bg-white/5 hover:text-white"
@@ -58,6 +67,7 @@ export default async function DashboardPage() {
             <span>✧</span>
             AI assistant
           </a>
+
           <a
             href="#analytics"
             className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-slate-400 transition hover:bg-white/5 hover:text-white"
@@ -65,6 +75,7 @@ export default async function DashboardPage() {
             <span>▥</span>
             Analytics
           </a>
+
           <a
             href="#calendar"
             className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-slate-400 transition hover:bg-white/5 hover:text-white"
@@ -89,9 +100,12 @@ export default async function DashboardPage() {
         <header className="sticky top-0 z-10 border-b border-white/[0.08] bg-[#09090f]/90 backdrop-blur-xl">
           <div className="flex min-h-[76px] items-center justify-between gap-4 px-4 sm:px-8">
             <div>
-              <p className="text-xs text-slate-500">Workspace / Overview</p>
+              <p className="text-xs text-slate-500">
+                Workspace / Overview
+              </p>
               <p className="mt-1 text-sm font-semibold text-slate-200">
-                Welcome back{user?.user_metadata?.full_name
+                Welcome back
+                {user.user_metadata?.full_name
                   ? `, ${user.user_metadata.full_name}`
                   : ""}
               </p>
@@ -103,7 +117,7 @@ export default async function DashboardPage() {
               </div>
 
               <div className="flex h-9 w-9 items-center justify-center rounded-full border border-violet-400/30 bg-violet-500/15 text-sm font-bold text-violet-300">
-                {(user?.user_metadata?.full_name || user?.email || "U")
+                {(user.user_metadata?.full_name || user.email || "U")
                   .charAt(0)
                   .toUpperCase()}
               </div>
@@ -187,6 +201,7 @@ export default async function DashboardPage() {
                     {item.value}
                   </span>
                 </div>
+
                 <h2 className="mt-5 font-semibold text-slate-100">
                   {item.label}
                 </h2>
