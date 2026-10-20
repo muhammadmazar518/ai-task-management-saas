@@ -21,6 +21,7 @@ const emptyForm = {
 export default function TaskForm({
   onSubmit,
   initialTask = null,
+  initialDueDate = "",
   onCancel = null,
   busy = false,
 }) {
@@ -34,7 +35,7 @@ export default function TaskForm({
           status: initialTask.status,
           dueDate: initialTask.dueDate,
         }
-      : emptyForm
+      : { ...emptyForm, dueDate: initialDueDate || "" }
   );
 
   const [error, setError] = useState("");
@@ -83,26 +84,26 @@ export default function TaskForm({
   }
 
   const fieldClass =
-    "mt-2 w-full min-w-0 rounded-xl border border-white/10 bg-[#09090f] px-3.5 py-3 text-sm text-slate-100 outline-none transition placeholder:text-slate-600 focus:border-violet-400/60 focus:ring-2 focus:ring-violet-400/10";
+    "mt-2 w-full min-w-0 rounded-xl border border-[var(--border)] bg-[var(--background)] px-3.5 py-3 text-sm text-[var(--foreground)] outline-none transition placeholder:text-[var(--muted)] focus:border-violet-400/60 focus:ring-2 focus:ring-violet-400/10";
 
-  const labelClass = "text-sm font-medium text-slate-300";
+  const labelClass = "text-sm font-medium text-[var(--foreground)]";
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-2xl border border-white/[0.08] bg-[#0c0c14] p-4 sm:p-6"
+      className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-6"
     >
       <div className="mb-5 flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-violet-300">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-violet-600 dark:text-violet-300">
             Task details
           </p>
 
-          <h2 className="mt-2 text-lg font-semibold text-white">
+          <h2 className="mt-2 text-lg font-semibold">
             {isEditing ? "Edit task" : "Add a task"}
           </h2>
 
-          <p className="mt-1 text-sm text-slate-400">
+          <p className="mt-1 text-sm text-[var(--muted)]">
             {isEditing
               ? "Update the details of your task."
               : "What would you like to accomplish?"}
@@ -110,7 +111,7 @@ export default function TaskForm({
         </div>
 
         <span
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-violet-400/20 bg-violet-500/10 text-xl text-violet-300"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-violet-400/20 bg-violet-500/10 text-xl text-violet-600 dark:text-violet-300"
           aria-hidden="true"
         >
           {isEditing ? "✎" : "+"}
@@ -127,8 +128,8 @@ export default function TaskForm({
             <span
               className={`text-xs ${
                 form.title.length > MAX_TITLE_LENGTH
-                  ? "text-red-300"
-                  : "text-slate-500"
+                  ? "text-red-600 dark:text-red-300"
+                  : "text-[var(--muted)]"
               }`}
             >
               {form.title.length}/{MAX_TITLE_LENGTH}
@@ -168,7 +169,7 @@ export default function TaskForm({
             ))}
           </select>
 
-          <p className="mt-2 text-xs text-slate-500">
+          <p className="mt-2 text-xs text-[var(--muted)]">
             Choose how important this task is.
           </p>
         </div>
@@ -192,14 +193,14 @@ export default function TaskForm({
             ))}
           </select>
 
-          <p className="mt-2 text-xs text-slate-500">
+          <p className="mt-2 text-xs text-[var(--muted)]">
             Track where you are with this task.
           </p>
         </div>
 
         <div className="sm:col-span-2">
           <label htmlFor={`${prefix}-dueDate`} className={labelClass}>
-            Due date <span className="font-normal text-slate-500">(optional)</span>
+            Due date <span className="font-normal text-[var(--muted)]">(optional)</span>
           </label>
 
           <input
@@ -217,13 +218,13 @@ export default function TaskForm({
         <p
           id={`${prefix}-error`}
           role="alert"
-          className="mt-4 rounded-xl border border-red-400/20 bg-red-500/[0.08] px-3 py-2.5 text-sm text-red-300"
+          className="mt-4 rounded-xl border border-red-400/20 bg-red-500/[0.08] px-3 py-2.5 text-sm text-red-600 dark:text-red-300"
         >
           {error}
         </p>
       )}
 
-      <div className="mt-6 flex flex-wrap gap-3 border-t border-white/[0.08] pt-5">
+      <div className="mt-6 flex flex-wrap gap-3 border-t border-[var(--border)] pt-5">
         <button
           type="submit"
           disabled={busy}
@@ -244,7 +245,7 @@ export default function TaskForm({
             type="button"
             disabled={busy}
             onClick={onCancel}
-            className="rounded-xl border border-white/10 bg-white/[0.03] px-5 py-3 text-sm font-medium text-slate-300 transition hover:bg-white/[0.07] hover:text-white disabled:opacity-50"
+            className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-5 py-3 text-sm font-medium text-[var(--foreground)] transition hover:border-violet-400/40 disabled:opacity-50"
           >
             Cancel
           </button>

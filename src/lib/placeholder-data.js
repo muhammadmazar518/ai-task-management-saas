@@ -1,4 +1,3 @@
-// TEMPORARY data. Replaced by real task counts on Day 2.
 export const dashboardStats = [
   { label: "Total tasks", value: 0, tone: "slate" },
   { label: "Completed", value: 0, tone: "green" },
