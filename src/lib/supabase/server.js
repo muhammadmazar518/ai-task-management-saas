@@ -1,7 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
-// Used in Server Components and Route Handlers (runs on the server).
 export async function createClient() {
   const cookieStore = await cookies();
 
@@ -19,8 +18,7 @@ export async function createClient() {
               cookieStore.set(name, value, options)
             );
           } catch {
-            // Called from a Server Component: safe to ignore because the
-            // proxy refreshes the session.
+            console.error("Could not refresh the Supabase session");
           }
         },
       },

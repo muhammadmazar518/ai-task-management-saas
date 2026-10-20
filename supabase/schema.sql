@@ -1,6 +1,3 @@
--- Snapshot of the database used by TaskFlow AI.
--- Run once in the Supabase SQL Editor of a NEW project. Do not re-run on an existing one.
-
 create table public.tasks (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
@@ -51,8 +48,6 @@ create policy "Users can log their own AI requests"
   on public.ai_requests for insert to authenticated
   with check ((select auth.uid()) = user_id);
 
--- Per-user rate limit: 5 AI summaries per 10 minutes.
--- The advisory lock makes check-then-insert safe when requests arrive together.
 create or replace function public.reserve_ai_summary_request()
 returns table(allowed boolean)
 language plpgsql

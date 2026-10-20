@@ -93,5 +93,5 @@ export async function logout() {
     throw new Error("Could not log out. Please try again.");
   }
 
-  redirect("/");
+  redirect("/login");
 }

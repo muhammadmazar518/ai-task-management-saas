@@ -5,6 +5,7 @@ import { useState } from "react";
 import StatCard from "@/components/StatCard";
 import TaskForm from "@/components/TaskForm";
 import { createClient } from "@/lib/supabase/client";
+import TaskCalendar from "@/components/TaskCalendar";
 import {
   filterTasks,
   fromRow,
@@ -27,19 +28,25 @@ const columnStyles = {
   todo: {
     border: "border-sky-400/20",
     dot: "bg-sky-400",
-    badge: "bg-sky-400/10 text-sky-300",
+    badge: "bg-sky-400/10 text-sky-600 dark:text-sky-300",
   },
   in_progress: {
     border: "border-amber-400/20",
     dot: "bg-amber-400",
-    badge: "bg-amber-400/10 text-amber-300",
+    badge: "bg-amber-400/10 text-amber-700 dark:text-amber-300",
   },
   done: {
     border: "border-emerald-400/20",
     dot: "bg-emerald-400",
-    badge: "bg-emerald-400/10 text-emerald-300",
+    badge: "bg-emerald-400/10 text-emerald-600 dark:text-emerald-300",
   },
 };
+
+const viewButtons = [
+  { id: "list", label: "List view" },
+  { id: "board", label: "Board view" },
+  { id: "calendar", label: "Calendar view" },
+];
 
 export default function TaskManager({
   initialTasks = [],
@@ -51,7 +58,9 @@ export default function TaskManager({
   const [filters, setFilters] = useState(defaultFilters);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(loadError);
-  const [isBoardView, setIsBoardView] = useState(false);
+  const [view, setView] = useState("list");
+  const [createPrefillDate, setCreatePrefillDate] = useState("");
+  const [createFormKey, setCreateFormKey] = useState(0);
   const [draggedTaskId, setDraggedTaskId] = useState(null);
   const [dragOverStatus, setDragOverStatus] = useState(null);
 
@@ -70,6 +79,20 @@ export default function TaskManager({
       ...current,
       [name]: value,
     }));
+  }
+
+  function handleCalendarCreate(dateKey) {
+    setEditingId(null);
+    setCreatePrefillDate(dateKey);
+    setCreateFormKey((current) => current + 1);
+
+    window.setTimeout(() => {
+      const input = document.getElementById("new-title");
+      input?.focus({ preventScroll: true });
+      document
+        .getElementById("create-task")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 0);
   }
 
   async function handleAddTask(values) {
@@ -231,10 +254,10 @@ export default function TaskManager({
   }
 
   const smallButton =
-    "rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-medium text-slate-300 transition hover:border-violet-400/30 hover:bg-violet-500/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-50";
+    "rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs font-medium text-[var(--foreground)] transition hover:border-violet-400/30 hover:bg-violet-500/10 disabled:cursor-not-allowed disabled:opacity-50";
 
   const filterField =
-    "min-w-0 rounded-xl border border-white/10 bg-[#0c0c14] px-3 py-3 text-sm text-slate-200 outline-none transition placeholder:text-slate-600 focus:border-violet-400/60";
+    "min-w-0 rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 py-3 text-sm text-[var(--foreground)] outline-none transition placeholder:text-[var(--muted)] focus:border-violet-400/60";
 
   function renderTaskActions(task) {
     return (
@@ -244,7 +267,7 @@ export default function TaskManager({
             type="button"
             disabled={busy}
             onClick={() => handleMarkDone(task.id)}
-            className="rounded-xl border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-xs font-medium text-emerald-300 transition hover:bg-emerald-400/20 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-xl border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-xs font-medium text-emerald-600 transition hover:bg-emerald-400/20 disabled:cursor-not-allowed disabled:opacity-50 dark:text-emerald-300"
           >
              Mark done
           </button>
@@ -263,7 +286,7 @@ export default function TaskManager({
           type="button"
           disabled={busy}
           onClick={() => handleDelete(task.id)}
-          className="rounded-xl border border-red-400/20 bg-red-500/[0.08] px-3 py-2 text-xs font-medium text-red-300 transition hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-xl border border-red-400/20 bg-red-500/[0.08] px-3 py-2 text-xs font-medium text-red-600 transition hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:text-red-300"
         >
           Delete
         </button>
@@ -292,15 +315,15 @@ export default function TaskManager({
           <p
             className={`break-words font-medium ${
               task.status === "done"
-                ? "text-slate-500 line-through"
-                : "text-slate-100"
+                ? "text-[var(--muted)] line-through"
+                : "text-[var(--foreground)]"
             }`}
           >
             {task.title}
           </p>
 
           {task.status === "done" && (
-            <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-300">
+            <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-300">
               Completed
             </span>
           )}
@@ -310,27 +333,27 @@ export default function TaskManager({
           <span
             className={`rounded-lg border px-2.5 py-1 ${
               task.priority === "high"
-                ? "border-orange-400/20 bg-orange-400/10 text-orange-300"
+                ? "border-orange-400/20 bg-orange-400/10 text-orange-600 dark:text-orange-300"
                 : task.priority === "medium"
-                  ? "border-amber-400/20 bg-amber-400/10 text-amber-200"
-                  : "border-sky-400/20 bg-sky-400/10 text-sky-300"
+                  ? "border-amber-400/20 bg-amber-400/10 text-amber-700 dark:text-amber-200"
+                  : "border-sky-400/20 bg-sky-400/10 text-sky-600 dark:text-sky-300"
             }`}
           >
             {PRIORITY_LABELS[task.priority]} priority
           </span>
 
-          <span className="rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-1 text-slate-300">
+          <span className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[var(--foreground)]">
             {STATUS_LABELS[task.status]}
           </span>
 
           {task.dueDate && (
-            <span className="rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-1 text-slate-400">
+            <span className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[var(--muted)]">
               Due {task.dueDate}
             </span>
           )}
 
           {isOverdue(task) && (
-            <span className="rounded-lg border border-red-400/20 bg-red-400/10 px-2.5 py-1 font-medium text-red-300">
+            <span className="rounded-lg border border-red-400/20 bg-red-400/10 px-2.5 py-1 font-medium text-red-600 dark:text-red-300">
               Overdue
             </span>
           )}
@@ -341,8 +364,8 @@ export default function TaskManager({
 
   function renderEditingForm(task) {
     return (
-      <div className="rounded-2xl border border-violet-400/25 bg-[#11111b] p-4 sm:p-5">
-        <h4 className="mb-4 font-semibold text-white">Edit task</h4>
+      <div className="rounded-2xl border border-violet-400/25 bg-[var(--surface)] p-4 sm:p-5">
+        <h4 className="mb-4 font-semibold text-[var(--foreground)]">Edit task</h4>
 
         <TaskForm
           initialTask={task}
@@ -359,14 +382,14 @@ export default function TaskManager({
       {error && (
         <div
           role="alert"
-          className="flex items-start justify-between gap-3 rounded-xl border border-red-400/20 bg-red-500/[0.08] p-4 text-sm text-red-300"
+          className="flex items-start justify-between gap-3 rounded-xl border border-red-400/20 bg-red-500/[0.08] p-4 text-sm text-red-600 dark:text-red-300"
         >
           <span>{error}</span>
 
           <button
             type="button"
             onClick={() => setError("")}
-            className="shrink-0 font-medium underline underline-offset-4 hover:text-red-200"
+            className="shrink-0 font-medium underline underline-offset-4 hover:text-red-700 dark:hover:text-red-200"
           >
             Dismiss
           </button>
@@ -380,32 +403,40 @@ export default function TaskManager({
         <StatCard label="Overdue" value={stats.overdue} tone="red" />
       </section>
 
-      <section className="rounded-2xl border border-white/[0.08] bg-[#0c0c14] p-4 sm:p-5">
+      <section
+        id="create-task"
+        className="scroll-mt-24 rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 sm:p-5"
+      >
         <div className="mb-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-violet-300">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-violet-600 dark:text-violet-300">
             Get things done
           </p>
 
-          <h3 className="mt-2 text-lg font-semibold text-white">
+          <h3 className="mt-2 text-lg font-semibold text-[var(--foreground)]">
             Create a task
           </h3>
 
-          <p className="mt-1 text-sm text-slate-400">
+          <p className="mt-1 text-sm text-[var(--muted)]">
             Add a task, choose its priority, and set a due date.
           </p>
         </div>
 
-        <TaskForm onSubmit={handleAddTask} busy={busy} />
+        <TaskForm
+          key={createFormKey}
+          initialDueDate={createPrefillDate}
+          onSubmit={handleAddTask}
+          busy={busy}
+        />
       </section>
 
       {tasks.length > 0 && (
         <section className="space-y-3">
           <div>
-            <h3 className="text-lg font-semibold text-white">
+            <h3 className="text-lg font-semibold text-[var(--foreground)]">
               Find your tasks
             </h3>
 
-            <p className="mt-1 text-sm text-slate-400">
+            <p className="mt-1 text-sm text-[var(--muted)]">
               Search and filter your tasks to find what you need.
             </p>
           </div>
@@ -467,67 +498,61 @@ export default function TaskManager({
       <section>
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-white">
-              {isBoardView ? "Kanban board" : "Your task list"}
+            <h3 className="text-lg font-semibold text-[var(--foreground)]">
+              {view === "board"
+                ? "Kanban board"
+                : view === "calendar"
+                  ? "Calendar"
+                  : "Your task list"}
             </h3>
 
-            <p className="mt-1 text-sm text-slate-400">
+            <p className="mt-1 text-sm text-[var(--muted)]">
               {visibleTasks.length}{" "}
               {visibleTasks.length === 1 ? "task" : "tasks"} shown
             </p>
           </div>
 
-          <div className="flex gap-2">
-            <button
-              type="button"
-              aria-pressed={!isBoardView}
-              onClick={() => setIsBoardView(false)}
-              className={`rounded-xl border px-4 py-2 text-sm font-medium transition ${
-                !isBoardView
-                  ? "border-violet-400/30 bg-violet-500/15 text-violet-200"
-                  : "border-white/10 bg-white/[0.03] text-slate-400 hover:text-white"
-              }`}
-            >
-              List view
-            </button>
-
-            <button
-              type="button"
-              aria-pressed={isBoardView}
-              onClick={() => setIsBoardView(true)}
-              className={`rounded-xl border px-4 py-2 text-sm font-medium transition ${
-                isBoardView
-                  ? "border-violet-400/30 bg-violet-500/15 text-violet-200"
-                  : "border-white/10 bg-white/[0.03] text-slate-400 hover:text-white"
-              }`}
-            >
-              Board view
-            </button>
+          <div className="flex flex-wrap gap-2">
+            {viewButtons.map((button) => (
+              <button
+                key={button.id}
+                type="button"
+                aria-pressed={view === button.id}
+                onClick={() => setView(button.id)}
+                className={`rounded-xl border px-4 py-2 text-sm font-medium transition ${
+                  view === button.id
+                    ? "border-violet-400/30 bg-violet-500/15 text-violet-700 dark:text-violet-200"
+                    : "border-[var(--border)] bg-[var(--surface-muted)] text-[var(--muted)] hover:text-[var(--foreground)]"
+                }`}
+              >
+                {button.label}
+              </button>
+            ))}
           </div>
         </div>
 
         {tasks.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-white/15 bg-[#0c0c14] px-5 py-12 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-violet-400/20 bg-violet-500/10 text-2xl text-violet-300">
+          <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-muted)] px-5 py-12 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-violet-400/20 bg-violet-500/10 text-2xl text-violet-600 dark:text-violet-300">
               +
             </div>
 
-            <h3 className="mt-4 font-semibold text-slate-100">
+            <h3 className="mt-4 font-semibold text-[var(--foreground)]">
               No tasks yet
             </h3>
 
-            <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-slate-400">
+            <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[var(--muted)]">
               Your workspace is ready. Create your first task using the form
               above.
             </p>
           </div>
         ) : visibleTasks.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-white/15 bg-[#0c0c14] p-10 text-center">
-            <h3 className="font-semibold text-slate-100">
+          <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-muted)] p-10 text-center">
+            <h3 className="font-semibold text-[var(--foreground)]">
               No matching tasks
             </h3>
 
-            <p className="mt-2 text-sm text-slate-400">
+            <p className="mt-2 text-sm text-[var(--muted)]">
               Try a different search or clear your filters.
             </p>
 
@@ -539,7 +564,7 @@ export default function TaskManager({
               Clear all filters
             </button>
           </div>
-        ) : isBoardView ? (
+        ) : view === "board" ? (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {STATUSES.map((status) => {
               const columnTasks = visibleTasks.filter(
@@ -554,7 +579,7 @@ export default function TaskManager({
                   onDragOver={(event) => handleDragOver(event, status)}
                   onDragLeave={() => setDragOverStatus(null)}
                   onDrop={(event) => handleDrop(event, status)}
-                  className={`min-h-64 rounded-2xl border bg-[#0c0c14] p-4 transition ${
+                  className={`min-h-64 rounded-2xl border bg-[var(--surface-muted)] p-4 transition ${
                     styles.border
                   } ${
                     dragOverStatus === status
@@ -566,12 +591,12 @@ export default function TaskManager({
                     <div className="flex items-center gap-2">
                       <span className={`h-2.5 w-2.5 rounded-full ${styles.dot}`} />
 
-                      <h4 className="font-semibold text-white">
+                      <h4 className="font-semibold text-[var(--foreground)]">
                         {STATUS_LABELS[status]}
                       </h4>
                     </div>
 
-                    <span className="rounded-full bg-white/[0.06] px-2.5 py-1 text-xs text-slate-300">
+                    <span className="rounded-full bg-[var(--background)] px-2.5 py-1 text-xs text-[var(--foreground)]">
                       {columnTasks.length}
                     </span>
                   </div>
@@ -585,7 +610,7 @@ export default function TaskManager({
                           handleDragStart(event, task.id)
                         }
                         onDragEnd={handleDragEnd}
-                        className={`rounded-xl border border-white/10 bg-[#151520] p-4 transition ${
+                        className={`rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 transition ${
                           draggedTaskId === task.id
                             ? "opacity-40"
                             : "opacity-100"
@@ -601,7 +626,7 @@ export default function TaskManager({
                           <>
                             {renderTaskDetails(task)}
 
-                            <label className="mt-4 block text-xs text-slate-400">
+                            <label className="mt-4 block text-xs text-[var(--muted)]">
                               Change status
 
                               <select
@@ -632,7 +657,7 @@ export default function TaskManager({
                     ))}
 
                     {columnTasks.length === 0 && (
-                      <div className="rounded-xl border border-dashed border-white/10 p-5 text-center text-xs leading-5 text-slate-500">
+                      <div className="rounded-xl border border-dashed border-[var(--border)] p-5 text-center text-xs leading-5 text-[var(--muted)]">
                         No tasks here yet.
                         <br />
                         Drag a task into this column.
@@ -643,6 +668,15 @@ export default function TaskManager({
               );
             })}
           </div>
+        ) : view === "calendar" ? (
+          <TaskCalendar
+            tasks={visibleTasks}
+            editingId={editingId}
+            busy={busy}
+            onEditTask={(task) => setEditingId(task.id)}
+            onCreateTask={handleCalendarCreate}
+            renderEditForm={renderEditingForm}
+          />
         ) : (
           <ul className="space-y-3">
             {visibleTasks.map((task) => (
@@ -650,7 +684,7 @@ export default function TaskManager({
                 {task.id === editingId ? (
                   renderEditingForm(task)
                 ) : (
-                  <div className="rounded-2xl border border-white/[0.08] bg-[#0c0c14] p-4 transition hover:border-violet-400/20 sm:p-5">
+                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 transition hover:border-violet-400/20 sm:p-5">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                       <div className="min-w-0 flex-1">
                         {renderTaskDetails(task)}

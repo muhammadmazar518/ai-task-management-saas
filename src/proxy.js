@@ -1,8 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 
-// Runs before every page request. It refreshes the login session and
-// sends logged-out visitors away from /dashboard.
 export async function proxy(request) {
   let response = NextResponse.next({ request });
 
@@ -27,7 +25,6 @@ export async function proxy(request) {
     }
   );
 
-  // getUser() asks Supabase to verify the session (safer than getSession()).
   const {
     data: { user },
   } = await supabase.auth.getUser();

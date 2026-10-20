@@ -13,7 +13,6 @@ export const STATUS_LABELS = {
   done: "Done",
 };
 
-// Today's date as "YYYY-MM-DD" in the user's local time.
 export function getToday() {
   const d = new Date();
   const month = String(d.getMonth() + 1).padStart(2, "0");
@@ -21,7 +20,6 @@ export function getToday() {
   return `${d.getFullYear()}-${month}-${day}`;
 }
 
-// A task is overdue if it has a due date in the past and is not done.
 export function isOverdue(task, today = getToday()) {
   return Boolean(task.dueDate) && task.status !== "done" && task.dueDate < today;
 }
@@ -33,8 +31,7 @@ export function getTaskStats(tasks, today = getToday()) {
   const overdue = tasks.filter((t) => isOverdue(t, today)).length;
   return { total, completed, pending, overdue };
 }
-// Returns the tasks that match the search text, status and priority.
-// Use "all" for status or priority to skip that filter.
+
 export function filterTasks(tasks, { search = "", status = "all", priority = "all" } = {}) {
   const query = search.trim().toLowerCase();
   return tasks.filter((task) => {
@@ -45,7 +42,6 @@ export function filterTasks(tasks, { search = "", status = "all", priority = "al
   });
 }
 
-// Database rows use due_date; the UI uses dueDate.
 export function fromRow(row) {
   return {
     id: row.id,
@@ -53,6 +49,7 @@ export function fromRow(row) {
     priority: row.priority,
     status: row.status,
     dueDate: row.due_date ?? "",
+    createdAt: row.created_at ?? "",
   };
 }
 
