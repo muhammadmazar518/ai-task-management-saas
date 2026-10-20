@@ -1,21 +1,22 @@
+import { Skeleton } from "@/components/ui";
+
 export default function NotificationsLoading() {
   return (
-    <div className="min-h-screen bg-[var(--background)]" aria-busy="true">
+    <div className="min-h-screen text-[var(--foreground)]" aria-busy="true">
       <p className="sr-only">Loading notifications…</p>
 
-      <main className="mx-auto w-full max-w-[1500px] animate-pulse px-4 py-8 sm:px-8">
-        <div className="h-4 w-32 rounded-lg bg-[var(--surface-muted)]" />
-        <div className="mt-4 h-9 w-96 max-w-full rounded-lg bg-[var(--surface-muted)]" />
-        <div className="mt-3 h-4 w-72 max-w-full rounded-lg bg-[var(--surface-muted)]" />
+      <main className="mx-auto w-full max-w-[1100px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        <div className="mb-6 border-b border-[var(--border)] pb-6">
+          <Skeleton className="h-3 w-24" />
+          <Skeleton className="mt-3 h-8 w-56 max-w-full" />
+          <Skeleton className="mt-3 h-4 w-80 max-w-full" />
+        </div>
 
-        <div className="mb-8 mt-8 h-72 rounded-2xl bg-[var(--surface-muted)]" />
+        <Skeleton className="h-16 rounded-[var(--radius-card)]" />
 
-        <div className="space-y-3">
+        <div className="mt-5 space-y-2">
           {[0, 1, 2, 3].map((item) => (
-            <div
-              key={item}
-              className="h-24 rounded-xl bg-[var(--surface-muted)]"
-            />
+            <Skeleton key={item} className="h-20 rounded-xl" />
           ))}
         </div>
       </main>

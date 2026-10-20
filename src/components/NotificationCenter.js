@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Icon from "@/components/Icon";
+import { Alert, EmptyState, Skeleton } from "@/components/ui";
+import { buttonClasses } from "@/lib/ui";
 import {
   countUnread,
   COMPLETED_NOTIFICATION_LIMIT,
@@ -11,19 +14,18 @@ import { parseDateKey } from "@/lib/analytics";
 
 const TYPE_ACCENTS = {
   overdue: {
-    icon: "!",
-    iconStyle:
-      "border-red-400/20 bg-red-400/10 text-red-600 dark:text-red-300",
+    icon: "alert",
+    iconStyle: "border-red-500/25 bg-red-500/10 text-red-600 dark:text-red-400",
   },
   due_today: {
-    icon: "◷",
+    icon: "clock",
     iconStyle:
-      "border-violet-400/20 bg-violet-500/10 text-violet-600 dark:text-violet-300",
+      "border-[var(--border)] bg-[var(--primary-soft)] text-[var(--primary)]",
   },
   completed: {
-    icon: "✓",
+    icon: "circleCheck",
     iconStyle:
-      "border-emerald-400/20 bg-emerald-400/10 text-emerald-600 dark:text-emerald-300",
+      "border-emerald-500/25 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
   },
 };
 
@@ -74,159 +76,169 @@ export default function NotificationCenter({
   const completedNoteVisible =
     completedTasks > completedLimit && items.length > 0;
 
-  return (
-    <div className="space-y-6">
-      {error && (
-        <div
-          role="alert"
-          className="flex items-start justify-between gap-3 rounded-xl border border-red-400/20 bg-red-500/[0.08] p-4 text-sm text-red-600 dark:text-red-300"
-        >
-          <span>{error}</span>
+  const groups = [
+    {
+      key: "unread",
+      label: "Unread",
+      items: items.filter((item) => !activeReadIds.has(item.id)),
+    },
+    {
+      key: "read",
+      label: "Earlier",
+      items: items.filter((item) => activeReadIds.has(item.id)),
+    },
+  ].filter((group) => group.items.length > 0);
 
-          <button
-            type="button"
-            onClick={() => setError("")}
-            className="shrink-0 font-medium underline underline-offset-4 hover:text-red-700 dark:hover:text-red-200"
-          >
-            Dismiss
-          </button>
-        </div>
+  return (
+    <div className="space-y-5">
+      {error && (
+        <Alert onDismiss={() => setError("")}>{error}</Alert>
       )}
 
-      <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-6">
-        <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-600 dark:text-violet-400">
-              Activity
-            </p>
-            <h2 className="mt-2 text-xl font-semibold">Your notifications</h2>
-            <p className="mt-1 text-sm text-[var(--muted)]" aria-live="polite">
-              {hydrated
-                ? unread === 0
-                  ? "You are all caught up."
-                  : `${unread} unread ${unread === 1 ? "notification" : "notifications"}.`
-                : "Loading your notifications…"}
-            </p>
+      <section className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+        <div className="flex flex-col gap-3 border-b border-[var(--border)] p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+          <div className="flex items-center gap-3">
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] text-[var(--muted-strong)]">
+              <Icon name="inbox" size={17} />
+            </span>
+
+            <div>
+              <h2 className="text-sm font-semibold">All activity</h2>
+              <p className="mt-0.5 text-xs text-[var(--muted)]" aria-live="polite">
+                {hydrated
+                  ? unread === 0
+                    ? "You are all caught up."
+                    : `${unread} unread ${unread === 1 ? "notification" : "notifications"}`
+                  : "Loading your notifications…"}
+              </p>
+            </div>
           </div>
 
           <button
             type="button"
             onClick={markAllRead}
             disabled={!hydrated || unread === 0}
-            className="inline-flex w-fit shrink-0 items-center gap-2 rounded-xl border border-[var(--border)] px-4 py-2.5 text-sm font-semibold transition hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/60 disabled:cursor-not-allowed disabled:opacity-50"
+            className={buttonClasses({ variant: "secondary", size: "md" })}
           >
-            <span aria-hidden="true">✓</span>
+            <Icon name="check" size={15} />
             Mark all as read
           </button>
         </div>
 
-        {!hydrated ? (
-          <ul className="space-y-3" aria-busy="true">
-            {[0, 1, 2].map((item) => (
-              <li
-                key={item}
-                className="h-20 animate-pulse rounded-xl border border-[var(--border)] bg-[var(--surface-muted)]"
-              />
-            ))}
-          </ul>
-        ) : items.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-[var(--border)] bg-[var(--surface-muted)] px-4 py-10 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-violet-400/20 bg-violet-500/10 text-2xl text-violet-600 dark:text-violet-300">
-              ✓
+        <div className="p-3 sm:p-4">
+          {!hydrated ? (
+            <div className="space-y-2" aria-busy="true">
+              {[0, 1, 2, 3].map((item) => (
+                <Skeleton key={item} className="h-20 rounded-xl" />
+              ))}
             </div>
-
-            <h3 className="mt-4 font-semibold">You are all caught up</h3>
-
-            <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[var(--muted)]">
-              You will see a notification here when a task is due today,
-              becomes overdue, or gets completed.
-            </p>
-
-            <Link
-              href="/dashboard#tasks"
-              className="mt-4 inline-flex items-center gap-2 rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-violet-950/20 transition hover:bg-violet-500"
-            >
-              <span aria-hidden="true" className="text-lg">
-                +
-              </span>
-              Create a task
-            </Link>
-          </div>
-        ) : (
-          <ul className="space-y-3">
-            {items.map((item) => {
-              const accent = TYPE_ACCENTS[item.type] ?? DEFAULT_ACCENT;
-              const isUnread = !activeReadIds.has(item.id);
-
-              return (
-                <li
-                  key={item.id}
-                  className={`flex flex-col gap-3 rounded-xl border p-4 transition sm:flex-row sm:items-center sm:justify-between ${
-                    isUnread
-                      ? "border-violet-400/40 bg-[var(--surface)]"
-                      : "border-[var(--border)] bg-[var(--surface-muted)]/50"
-                  }`}
+          ) : items.length === 0 ? (
+            <EmptyState
+              icon="bell"
+              title="You are all caught up"
+              description="Notifications appear here when a task is due today, becomes overdue, or gets completed."
+              action={
+                <Link
+                  href="/dashboard/tasks"
+                  className={buttonClasses({ variant: "primary", size: "lg" })}
                 >
-                  <div className="flex min-w-0 items-start gap-3">
-                    <span
-                      aria-hidden="true"
-                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border text-base ${accent.iconStyle}`}
-                    >
-                      {accent.icon}
-                    </span>
+                  <Icon name="plus" size={15} />
+                  Create a task
+                </Link>
+              }
+            />
+          ) : (
+            <div className="space-y-5">
+              {groups.map((group) => (
+                <div key={group.key}>
+                  <p className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
+                    {group.label} · {group.items.length}
+                  </p>
 
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p
-                          className={`text-sm font-semibold ${
+                  <ul className="space-y-2">
+                    {group.items.map((item) => {
+                      const accent = TYPE_ACCENTS[item.type] ?? DEFAULT_ACCENT;
+                      const isUnread = !activeReadIds.has(item.id);
+
+                      return (
+                        <li
+                          key={item.id}
+                          className={`flex flex-col gap-3 rounded-xl border p-3.5 transition sm:flex-row sm:items-center sm:justify-between ${
                             isUnread
-                              ? "text-[var(--foreground)]"
-                              : "text-[var(--muted)]"
+                              ? "border-[var(--border-strong)] bg-[var(--surface)]"
+                              : "border-[var(--border)] bg-[var(--surface-muted)]/60"
                           }`}
                         >
-                          {item.title}
-                        </p>
+                          <div className="flex min-w-0 items-start gap-3">
+                            <span
+                              aria-hidden="true"
+                              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${accent.iconStyle}`}
+                            >
+                              <Icon name={accent.icon} size={15} />
+                            </span>
 
-                        {isUnread && (
-                          <span className="h-2 w-2 shrink-0 rounded-full bg-violet-500" aria-hidden="true" />
-                        )}
-                      </div>
+                            <div className="min-w-0">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <p
+                                  className={`text-sm font-medium ${
+                                    isUnread
+                                      ? "text-[var(--foreground)]"
+                                      : "text-[var(--muted-strong)]"
+                                  }`}
+                                >
+                                  {item.title}
+                                </p>
 
-                      <p className="mt-1 break-words text-sm leading-6 text-[var(--muted)]">
-                        {item.message}
-                      </p>
+                                {isUnread && (
+                                  <span
+                                    aria-label="Unread"
+                                    className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--primary)]"
+                                  />
+                                )}
+                              </div>
 
-                      <p
-                        className="mt-1 text-xs text-[var(--muted)]"
-                        title={parseDateKey(item.occurredOn).toLocaleString()}
-                      >
-                        {formatWhen(item.occurredOn, today)}
-                        {isUnread ? " · Unread" : " · Read"}
-                      </p>
-                    </div>
-                  </div>
+                              <p className="mt-1 break-words text-sm leading-6 text-[var(--muted)]">
+                                {item.message}
+                              </p>
 
-                  {isUnread && (
-                    <button
-                      type="button"
-                      onClick={() => markRead(item.id)}
-                      className="shrink-0 self-start rounded-xl border border-[var(--border)] px-3.5 py-2 text-sm font-medium transition hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/60 sm:self-auto"
-                      aria-label={`Mark "${item.title}" notification as read`}
-                    >
-                      Mark as read
-                    </button>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        )}
+                              <p
+                                className="mt-1.5 flex items-center gap-1.5 text-xs text-[var(--muted)]"
+                                title={parseDateKey(item.occurredOn).toLocaleString()}
+                              >
+                                <Icon name="clock" size={12} />
+                                {formatWhen(item.occurredOn, today)}
+                              </p>
+                            </div>
+                          </div>
+
+                          {isUnread && (
+                            <button
+                              type="button"
+                              onClick={() => markRead(item.id)}
+                              className={`${buttonClasses({
+                                variant: "secondary",
+                                size: "sm",
+                              })} shrink-0 self-start sm:self-auto`}
+                              aria-label={`Mark "${item.title}" notification as read`}
+                            >
+                              Mark as read
+                            </button>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         {completedNoteVisible && (
-          <p className="mt-4 text-xs leading-5 text-[var(--muted)]">
-            Showing the {completedLimit} most recently created completed tasks
-            out of {completedTasks}. Completion times are not tracked by the
-            app, so older completions are not listed.
+          <p className="border-t border-[var(--border)] px-4 py-3 text-xs leading-5 text-[var(--muted)] sm:px-5">
+            Showing the {completedLimit} most recently created completed tasks out
+            of {completedTasks}. Completion times are not tracked by the app, so
+            older completions are not listed.
           </p>
         )}
       </section>

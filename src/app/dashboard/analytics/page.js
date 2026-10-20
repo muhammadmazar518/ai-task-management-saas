@@ -1,7 +1,11 @@
-
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import DashboardHeader from "@/components/DashboardHeader";
 import AnalyticsDashboard from "@/components/AnalyticsDashboard";
+import { UserProvider } from "@/components/UserContext";
+import { PageHeader } from "@/components/ui";
+import Icon from "@/components/Icon";
+import { buttonClasses } from "@/lib/ui";
 import { siteConfig } from "@/lib/content";
 import { createClient } from "@/lib/supabase/server";
 import { fromRow } from "@/lib/tasks";
@@ -32,37 +36,29 @@ export default async function AnalyticsPage() {
   const tasks = (rows ?? []).map(fromRow);
 
   return (
-    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] transition-colors duration-200">
-      <div className="min-w-0">
+    <UserProvider user={user}>
+      <div className="min-h-screen text-[var(--foreground)]">
         <DashboardHeader
-          user={user}
           crumb="Analytics"
           notificationItems={buildNotifications(tasks)}
           notificationUserId={user.id}
         />
 
-        <main className="mx-auto w-full max-w-[1500px] px-4 py-8 sm:px-8">
-          <section className="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-            <div>
-              <p className="mb-3 text-sm font-medium text-violet-600 dark:text-violet-400">
-                INSIGHTS AT A GLANCE
-              </p>
-              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                Your productivity, measured.
-              </h1>
-              <p className="mt-3 max-w-xl text-sm leading-6 text-[var(--muted)] sm:text-base">
-                Track completion, priorities, trends, and upcoming deadlines —
-                all computed from your tasks.
-              </p>
-            </div>
-
-            <a
-              href="/dashboard"
-              className="inline-flex w-fit items-center gap-2 rounded-xl border border-[var(--border)] px-5 py-3 text-sm font-semibold transition hover:bg-[var(--surface-muted)]"
-            >
-              ← Back to dashboard
-            </a>
-          </section>
+        <main className="mx-auto w-full max-w-[1500px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+          <PageHeader
+            eyebrow="Insights"
+            title="Your productivity, measured"
+            description="Completion, priorities, trends, and upcoming deadlines — computed entirely from your own tasks."
+            actions={
+              <Link
+                href="/dashboard"
+                className={buttonClasses({ variant: "secondary", size: "lg" })}
+              >
+                <Icon name="arrowLeft" size={15} />
+                Back to dashboard
+              </Link>
+            }
+          />
 
           <AnalyticsDashboard
             initialTasks={tasks}
@@ -78,6 +74,6 @@ export default async function AnalyticsPage() {
           </footer>
         </main>
       </div>
-    </div>
+    </UserProvider>
   );
 }

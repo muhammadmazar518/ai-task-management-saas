@@ -1,7 +1,7 @@
-
 "use client";
 
 import { useState } from "react";
+import { buttonClasses, inputClass, labelClass } from "@/lib/ui";
 import {
   PRIORITIES,
   STATUSES,
@@ -24,6 +24,7 @@ export default function TaskForm({
   initialDueDate = "",
   onCancel = null,
   busy = false,
+  compact = false,
 }) {
   const isEditing = Boolean(initialTask);
 
@@ -83,73 +84,41 @@ export default function TaskForm({
     setError("");
   }
 
-  const fieldClass =
-    "mt-2 w-full min-w-0 rounded-xl border border-[var(--border)] bg-[var(--background)] px-3.5 py-3 text-sm text-[var(--foreground)] outline-none transition placeholder:text-[var(--muted)] focus:border-violet-400/60 focus:ring-2 focus:ring-violet-400/10";
-
-  const labelClass = "text-sm font-medium text-[var(--foreground)]";
-
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-6"
-    >
-      <div className="mb-5 flex items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-violet-600 dark:text-violet-300">
-            Task details
-          </p>
+    <form onSubmit={handleSubmit} className={compact ? "" : "space-y-4"}>
+      <div>
+        <div className="flex items-center justify-between gap-3">
+          <label htmlFor={`${prefix}-title`} className={labelClass}>
+            Task title
+          </label>
 
-          <h2 className="mt-2 text-lg font-semibold">
-            {isEditing ? "Edit task" : "Add a task"}
-          </h2>
-
-          <p className="mt-1 text-sm text-[var(--muted)]">
-            {isEditing
-              ? "Update the details of your task."
-              : "What would you like to accomplish?"}
-          </p>
+          <span
+            className={`text-xs ${
+              form.title.length > MAX_TITLE_LENGTH
+                ? "text-red-600 dark:text-red-400"
+                : "text-[var(--muted)]"
+            }`}
+          >
+            {form.title.length}/{MAX_TITLE_LENGTH}
+          </span>
         </div>
 
-        <span
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-violet-400/20 bg-violet-500/10 text-xl text-violet-600 dark:text-violet-300"
-          aria-hidden="true"
-        >
-          {isEditing ? "✎" : "+"}
-        </span>
+        <input
+          id={`${prefix}-title`}
+          name="title"
+          type="text"
+          value={form.title}
+          onChange={handleChange}
+          maxLength={MAX_TITLE_LENGTH + 1}
+          placeholder="e.g. Finish project report"
+          aria-invalid={Boolean(error)}
+          aria-describedby={error ? `${prefix}-error` : undefined}
+          className={`${inputClass} mt-1.5`}
+          autoComplete="off"
+        />
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2">
-        <div className="sm:col-span-2">
-          <div className="flex items-center justify-between gap-3">
-            <label htmlFor={`${prefix}-title`} className={labelClass}>
-              Task title
-            </label>
-
-            <span
-              className={`text-xs ${
-                form.title.length > MAX_TITLE_LENGTH
-                  ? "text-red-600 dark:text-red-300"
-                  : "text-[var(--muted)]"
-              }`}
-            >
-              {form.title.length}/{MAX_TITLE_LENGTH}
-            </span>
-          </div>
-
-          <input
-            id={`${prefix}-title`}
-            name="title"
-            type="text"
-            value={form.title}
-            onChange={handleChange}
-            maxLength={MAX_TITLE_LENGTH + 1}
-            placeholder="e.g. Finish project report"
-            aria-invalid={Boolean(error)}
-            aria-describedby={error ? `${prefix}-error` : undefined}
-            className={fieldClass}
-          />
-        </div>
-
+      <div className="grid gap-4 sm:grid-cols-3">
         <div>
           <label htmlFor={`${prefix}-priority`} className={labelClass}>
             Priority
@@ -160,7 +129,7 @@ export default function TaskForm({
             name="priority"
             value={form.priority}
             onChange={handleChange}
-            className={fieldClass}
+            className={`${inputClass} mt-1.5`}
           >
             {PRIORITIES.map((priority) => (
               <option key={priority} value={priority}>
@@ -168,10 +137,6 @@ export default function TaskForm({
               </option>
             ))}
           </select>
-
-          <p className="mt-2 text-xs text-[var(--muted)]">
-            Choose how important this task is.
-          </p>
         </div>
 
         <div>
@@ -184,7 +149,7 @@ export default function TaskForm({
             name="status"
             value={form.status}
             onChange={handleChange}
-            className={fieldClass}
+            className={`${inputClass} mt-1.5`}
           >
             {STATUSES.map((status) => (
               <option key={status} value={status}>
@@ -192,15 +157,11 @@ export default function TaskForm({
               </option>
             ))}
           </select>
-
-          <p className="mt-2 text-xs text-[var(--muted)]">
-            Track where you are with this task.
-          </p>
         </div>
 
-        <div className="sm:col-span-2">
+        <div>
           <label htmlFor={`${prefix}-dueDate`} className={labelClass}>
-            Due date <span className="font-normal text-[var(--muted)]">(optional)</span>
+            Due date
           </label>
 
           <input
@@ -209,7 +170,7 @@ export default function TaskForm({
             type="date"
             value={form.dueDate}
             onChange={handleChange}
-            className={fieldClass}
+            className={`${inputClass} mt-1.5`}
           />
         </div>
       </div>
@@ -218,26 +179,19 @@ export default function TaskForm({
         <p
           id={`${prefix}-error`}
           role="alert"
-          className="mt-4 rounded-xl border border-red-400/20 bg-red-500/[0.08] px-3 py-2.5 text-sm text-red-600 dark:text-red-300"
+          className="rounded-lg border border-red-500/25 bg-red-500/[0.07] px-3 py-2 text-sm text-red-700 dark:text-red-300"
         >
           {error}
         </p>
       )}
 
-      <div className="mt-6 flex flex-wrap gap-3 border-t border-[var(--border)] pt-5">
+      <div className="flex flex-wrap items-center gap-2">
         <button
           type="submit"
           disabled={busy}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-950/20 transition hover:bg-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-400/60 disabled:cursor-not-allowed disabled:opacity-50"
+          className={buttonClasses({ variant: "primary", size: "lg" })}
         >
-          {busy ? (
-            "Saving..."
-          ) : (
-            <>
-              <span>{isEditing ? "✓" : "+"}</span>
-              {isEditing ? "Save changes" : "Add task"}
-            </>
-          )}
+          {busy ? "Saving…" : isEditing ? "Save changes" : "Add task"}
         </button>
 
         {isEditing && (
@@ -245,7 +199,7 @@ export default function TaskForm({
             type="button"
             disabled={busy}
             onClick={onCancel}
-            className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-5 py-3 text-sm font-medium text-[var(--foreground)] transition hover:border-violet-400/40 disabled:opacity-50"
+            className={buttonClasses({ variant: "secondary", size: "lg" })}
           >
             Cancel
           </button>
