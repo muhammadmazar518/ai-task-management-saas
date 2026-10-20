@@ -1,11 +1,12 @@
-
 "use client";
 
 import Link from "next/link";
 import { useCallback, useState } from "react";
 import { usePathname } from "next/navigation";
 import AppSidebar from "@/components/AppSidebar";
-import { siteConfig } from "@/lib/content";
+import Logo from "@/components/Logo";
+import Icon from "@/components/Icon";
+import { useSessionUser } from "@/components/UserContext";
 
 const AUTHENTICATED_ROUTE_PREFIXES = ["/dashboard"];
 
@@ -17,16 +18,10 @@ function isAuthenticatedRoute(pathname) {
 
 export default function AppShell({ children }) {
   const pathname = usePathname();
+  const user = useSessionUser();
   const showAppChrome = isAuthenticatedRoute(pathname);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [prevPathname, setPrevPathname] = useState(pathname);
-
-  if (prevPathname !== pathname) {
-    setPrevPathname(pathname);
-    setSidebarOpen(false);
-  }
-
   const closeSidebar = useCallback(() => setSidebarOpen(false), []);
 
   if (!showAppChrome) {
@@ -35,33 +30,32 @@ export default function AppShell({ children }) {
 
   return (
     <div className="min-h-screen">
-      <AppSidebar open={sidebarOpen} onClose={closeSidebar} />
+      <AppSidebar open={sidebarOpen} onClose={closeSidebar} user={user} />
 
       <div className="lg:pl-64">
-        <header className="sticky top-0 z-30 flex min-h-14 items-center justify-between gap-3 border-b border-[var(--border)] bg-[var(--background)]/90 px-4 backdrop-blur-xl lg:hidden">
-          <Link
-            href="/"
-            className="flex items-center gap-2 rounded-lg font-bold tracking-tight focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/60"
-          >
-            <span
-              aria-hidden="true"
-              className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-600 text-white"
-            >
-              T
-            </span>
-            <span>{siteConfig.name}</span>
-          </Link>
+        <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-[var(--border)] bg-[var(--background)]/85 px-4 backdrop-blur-xl lg:hidden">
+          <Logo size="sm" href="/dashboard" />
 
-          <button
-            type="button"
-            onClick={() => setSidebarOpen(true)}
-            aria-label="Open navigation menu"
-            aria-controls="app-sidebar"
-            aria-expanded={sidebarOpen}
-            className="rounded-lg border border-[var(--border)] p-2 text-[var(--foreground)] transition hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/60"
-          >
-            <span aria-hidden="true">☰</span>
-          </button>
+          <div className="flex items-center gap-1.5">
+            <Link
+              href="/dashboard/notifications"
+              aria-label="Notifications"
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--muted-strong)] transition hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+            >
+              <Icon name="bell" size={16} />
+            </Link>
+
+            <button
+              type="button"
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Open navigation menu"
+              aria-controls="app-sidebar"
+              aria-expanded={sidebarOpen}
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--muted-strong)] transition hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+            >
+              <Icon name="menu" size={16} />
+            </button>
+          </div>
         </header>
 
         <div className="min-w-0">{children}</div>

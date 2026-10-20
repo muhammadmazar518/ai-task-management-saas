@@ -1,8 +1,8 @@
-
 "use client";
 
 import { useSyncExternalStore } from "react";
 import { useTheme } from "next-themes";
+import Icon from "@/components/Icon";
 
 const emptySubscribe = () => () => {};
 const getIsMounted = () => true;
@@ -18,14 +18,10 @@ export default function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <button
-        type="button"
-        disabled
-        aria-label="Change theme"
-        className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-2"
-      >
-        <span className="block h-5 w-5" />
-      </button>
+      <span
+        aria-hidden="true"
+        className="block h-8 w-8 rounded-lg border border-[var(--border)] bg-[var(--surface)]"
+      />
     );
   }
 
@@ -37,9 +33,9 @@ export default function ThemeToggle() {
       onClick={() => setTheme(isDark ? "light" : "dark")}
       aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
       title={`Switch to ${isDark ? "light" : "dark"} mode`}
-      className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-2 text-[var(--foreground)] transition hover:bg-[var(--surface-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/60"
+      className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--muted-strong)] transition hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
     >
-      {isDark ? "☀️" : "🌙"}
+      <Icon name={isDark ? "sun" : "moon"} size={16} />
     </button>
   );
 }

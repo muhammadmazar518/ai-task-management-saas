@@ -1,58 +1,56 @@
+import Icon from "@/components/Icon";
 
 const tones = {
   slate: {
-    icon: "▤",
-    iconStyle:
-      "border-violet-400/20 bg-violet-400/10 text-violet-600 dark:text-violet-300",
+    icon: "tasks",
+    iconStyle: "border-[var(--border)] bg-[var(--surface-muted)] text-[var(--muted-strong)]",
     valueStyle: "text-[var(--foreground)]",
-    accent: "bg-violet-500",
   },
   green: {
-    icon: "✓",
-    iconStyle:
-      "border-emerald-400/20 bg-emerald-400/10 text-emerald-600 dark:text-emerald-300",
-    valueStyle: "text-emerald-600 dark:text-emerald-300",
-    accent: "bg-emerald-500",
+    icon: "circleCheck",
+    iconStyle: "border-emerald-500/25 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+    valueStyle: "text-emerald-600 dark:text-emerald-400",
   },
   amber: {
-    icon: "◷",
-    iconStyle:
-      "border-amber-400/20 bg-amber-400/10 text-amber-600 dark:text-amber-300",
-    valueStyle: "text-amber-600 dark:text-amber-300",
-    accent: "bg-amber-500",
+    icon: "clock",
+    iconStyle: "border-amber-500/25 bg-amber-500/10 text-amber-600 dark:text-amber-400",
+    valueStyle: "text-amber-600 dark:text-amber-400",
   },
   red: {
-    icon: "!",
-    iconStyle:
-      "border-red-400/20 bg-red-400/10 text-red-600 dark:text-red-300",
-    valueStyle: "text-red-600 dark:text-red-300",
-    accent: "bg-red-500",
+    icon: "alert",
+    iconStyle: "border-red-500/25 bg-red-500/10 text-red-600 dark:text-red-400",
+    valueStyle: "text-red-600 dark:text-red-400",
+  },
+  indigo: {
+    icon: "circleDot",
+    iconStyle: "border-[var(--border)] bg-[var(--primary-soft)] text-[var(--primary)]",
+    valueStyle: "text-[var(--foreground)]",
   },
 };
 
-export default function StatCard({ label, value, tone = "slate" }) {
+export default function StatCard({ label, value, tone = "slate", hint = "" }) {
   const style = tones[tone] || tones.slate;
 
   return (
-    <article className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 transition hover:border-violet-400/40 sm:p-5">
-      <div className="flex items-start justify-between gap-3">
-        <p className="text-sm text-[var(--muted)]">{label}</p>
+    <article className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-4 shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition hover:border-[var(--border-strong)]">
+      <div className="flex items-center justify-between gap-3">
+        <p className="truncate text-xs font-medium uppercase tracking-wide text-[var(--muted)]">
+          {label}
+        </p>
 
         <span
-          className={`flex h-9 w-9 items-center justify-center rounded-xl border text-base ${style.iconStyle}`}
+          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border ${style.iconStyle}`}
           aria-hidden="true"
         >
-          {style.icon}
+          <Icon name={style.icon} size={14} />
         </span>
       </div>
 
-      <p className={`mt-5 text-3xl font-bold tracking-tight ${style.valueStyle}`}>
+      <p className={`mt-3 text-2xl font-semibold tracking-tight ${style.valueStyle}`}>
         {value}
       </p>
 
-      <div className="mt-5 h-1 overflow-hidden rounded-full bg-[var(--border)]">
-        <div className={`h-full w-1/3 rounded-full ${style.accent}`} />
-      </div>
+      {hint && <p className="mt-1 truncate text-xs text-[var(--muted)]">{hint}</p>}
     </article>
   );
 }

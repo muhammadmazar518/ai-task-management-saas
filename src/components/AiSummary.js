@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Icon from "@/components/Icon";
+import { buttonClasses } from "@/lib/ui";
 
 export default function AiSummary() {
   const [loading, setLoading] = useState(false);
@@ -38,109 +40,68 @@ export default function AiSummary() {
   }
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-violet-400/20 bg-[var(--surface-muted)]">
-      <div className="border-b border-[var(--border)] bg-gradient-to-r from-violet-500/[0.12] via-fuchsia-500/[0.05] to-transparent p-5 sm:p-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-start gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-violet-400/20 bg-violet-500/10 text-2xl text-violet-600 dark:text-violet-300">
-              ✧
-            </div>
-
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-violet-600 dark:text-violet-300">
-                AI-powered insights
-              </p>
-
-              <h2 className="mt-1 text-lg font-semibold">
-                Your AI assistant
-              </h2>
-
-              <p className="mt-1 text-sm leading-5 text-[var(--muted)]">
-                Understand your workload and discover your next best move.
-              </p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleGenerate}
-            disabled={loading}
-            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-violet-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-950/20 transition hover:bg-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-400/60 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {loading ? (
-              <>
-                <span className="animate-pulse" aria-hidden="true">
-                  ✧
-                </span>
-                Generating...
-              </>
-            ) : (
-              <>
-                <span aria-hidden="true">✧</span>
-                {result ? "Regenerate insights" : "Generate summary"}
-              </>
-            )}
-          </button>
+    <div>
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2 text-xs text-[var(--muted)]">
+          <Icon name="sparkles" size={14} className="text-[var(--primary)]" />
+          {result
+            ? `Generated at ${result.generatedAt}`
+            : "Generate a summary of your workload"}
         </div>
+
+        <button
+          type="button"
+          onClick={handleGenerate}
+          disabled={loading}
+          className={buttonClasses({ variant: "primary", size: "md" })}
+        >
+          <Icon name={result ? "refresh" : "sparkles"} size={15} />
+          {loading ? "Generating…" : result ? "Regenerate" : "Generate summary"}
+        </button>
       </div>
 
-      <div className="p-5 sm:p-6" aria-live="polite" aria-busy={loading}>
+      <div aria-live="polite" aria-busy={loading}>
         {!loading && !error && !result && (
-          <div className="rounded-xl border border-dashed border-[var(--border)] bg-[var(--background)] px-4 py-8 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-violet-400/20 bg-violet-500/10 text-2xl text-violet-600 dark:text-violet-300">
-              ✧
-            </div>
+          <div className="rounded-xl border border-dashed border-[var(--border-strong)] bg-[var(--surface-muted)] px-4 py-8 text-center">
+            <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--primary)]">
+              <Icon name="sparkles" size={18} />
+            </span>
 
-            <h3 className="mt-4 font-medium">
-              Ready to make your day more productive?
+            <h3 className="mt-3 text-sm font-semibold">
+              Ready to see the bigger picture?
             </h3>
 
-            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--muted)]">
-              Generate a summary of your tasks with practical next steps to
-              help you decide what to focus on.
+            <p className="mx-auto mt-1.5 max-w-md text-sm leading-6 text-[var(--muted)]">
+              Generate a written summary of your tasks with practical next steps
+              to help you decide what to focus on.
             </p>
           </div>
         )}
 
         {loading && (
-          <div className="flex items-center gap-3 rounded-xl border border-violet-400/15 bg-violet-500/[0.05] p-4">
-            <div className="flex h-10 w-10 shrink-0 animate-pulse items-center justify-center rounded-xl bg-violet-500/15 text-xl text-violet-600 dark:text-violet-300">
-              ✧
-            </div>
-
-            <div>
-              <p className="text-sm font-medium">
-                Analyzing your workload...
-              </p>
-              <p className="mt-1 text-xs text-[var(--muted)]">
-                Preparing your summary and suggested next steps.
-              </p>
-            </div>
+          <div className="space-y-3" aria-hidden="true">
+            <div className="h-24 animate-pulse rounded-xl bg-[var(--surface-muted)]" />
+            <div className="h-16 animate-pulse rounded-xl bg-[var(--surface-muted)]" />
+            <div className="h-16 animate-pulse rounded-xl bg-[var(--surface-muted)]" />
           </div>
         )}
 
         {error && (
           <div
             role="alert"
-            className="flex items-start gap-3 rounded-xl border border-red-400/20 bg-red-500/[0.08] p-4"
+            className="flex items-start gap-3 rounded-lg border border-red-500/25 bg-red-500/[0.07] p-3.5 text-sm text-red-700 dark:text-red-300"
           >
-            <span className="text-lg text-red-600 dark:text-red-300" aria-hidden="true">
-              !
-            </span>
+            <Icon name="alert" size={16} className="mt-0.5" />
 
-            <div>
-              <p className="text-sm font-medium text-red-700 dark:text-red-200">
-                Could not generate insights
-              </p>
-              <p className="mt-1 text-sm leading-5 text-red-600 dark:text-red-300">
-                {error}
-              </p>
+            <div className="min-w-0 flex-1">
+              <p className="font-medium">Could not generate insights</p>
+              <p className="mt-1 leading-6">{error}</p>
 
               <button
                 type="button"
                 onClick={handleGenerate}
                 disabled={loading}
-                className="mt-3 text-sm font-semibold text-red-700 underline underline-offset-4 hover:text-red-800 disabled:opacity-50 dark:text-red-200 dark:hover:text-white"
+                className="mt-2 font-semibold underline underline-offset-4 hover:text-red-800 disabled:opacity-50 dark:hover:text-red-200"
               >
                 Try again
               </button>
@@ -149,57 +110,50 @@ export default function AiSummary() {
         )}
 
         {result && !loading && (
-          <div className="space-y-5">
-            <div className="rounded-xl border border-[var(--border)] bg-[var(--background)] p-4 sm:p-5">
-              <div className="mb-3 flex items-center gap-2">
-                <span className="text-violet-600 dark:text-violet-300" aria-hidden="true">
-                  ◈
-                </span>
-                <h3 className="text-sm font-semibold">
+          <div className="space-y-4">
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
+              <div className="mb-2 flex items-center gap-2">
+                <Icon name="inbox" size={14} className="text-[var(--primary)]" />
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
                   Workload summary
                 </h3>
               </div>
 
-              <p className="whitespace-pre-wrap text-sm leading-7 text-[var(--foreground)]">
+              <p className="whitespace-pre-wrap text-sm leading-7">
                 {result.summary}
               </p>
             </div>
 
             <div>
-              <div className="mb-3 flex items-center gap-2">
-                <span className="text-emerald-600 dark:text-emerald-300" aria-hidden="true">
-                  ↗
-                </span>
-                <h3 className="text-sm font-semibold">
+              <div className="mb-2 flex items-center gap-2">
+                <Icon
+                  name="trending"
+                  size={14}
+                  className="text-emerald-600 dark:text-emerald-400"
+                />
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
                   Suggested next steps
                 </h3>
               </div>
 
-              <ol className="space-y-3">
+              <ol className="space-y-2">
                 {result.nextSteps.map((step, index) => (
                   <li
                     key={index}
-                    className="flex items-start gap-3 rounded-xl border border-[var(--border)] bg-[var(--background)] p-3"
+                    className="flex items-start gap-2.5 rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] p-3"
                   >
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-violet-400/20 bg-violet-500/10 text-xs font-semibold text-violet-600 dark:text-violet-300">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-[var(--primary-soft)] text-[10px] font-bold text-[var(--primary)]">
                       {index + 1}
                     </span>
 
-                    <p className="pt-1 text-sm leading-6 text-[var(--foreground)]">
-                      {step}
-                    </p>
+                    <p className="text-sm leading-6">{step}</p>
                   </li>
                 ))}
               </ol>
             </div>
-
-            <p className="text-xs text-[var(--muted)]">
-              Generated at {result.generatedAt}. Based on your tasks at that
-              time.
-            </p>
           </div>
         )}
       </div>
-    </section>
+    </div>
   );
 }
